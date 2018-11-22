@@ -48,9 +48,14 @@ var tags = ['path', 'name', 'hash', 'ext', 'query', 'qparams', 'qhash'];
  * @param  {Object} opts plugin options
  * @return {boolean}
  */
-function ignore(fileMeta, opts) {
+async function ignore(fileMeta, opts) {
     if (typeof opts.ignore === 'function') {
-        return opts.ignore(fileMeta, opts);
+        var fn = opts.ignore;
+        if (fn.constructor.name === 'AsyncFunction' || fn instanceof Promise) {
+            return await fn(fileMeta, opts);
+        } else {
+            return opts.ignore(fileMeta, opts);
+        }
     }
 
     if (typeof opts.ignore === 'string' || Array.isArray(opts.ignore)) {
@@ -115,7 +120,7 @@ function getFileMeta(dirname, sourceInputFile, value, opts) {
  * @param {Object} opts plugin options
  * @return {Promise}
  */
-function processUrl(result, decl, node, opts) {
+async function processUrl(result, decl, node, opts) {
     // ignore from the css file by `!`
     if (node.value.indexOf('!') === 0) {
         node.value = node.value.slice(1);
@@ -135,7 +140,7 @@ function processUrl(result, decl, node, opts) {
     var fileMeta = getFileMeta(dirname, decl.source.input.file, node.value, opts);
 
     // ignore from the fileMeta config
-    if (ignore(fileMeta, opts)) {
+    if (await ignore(fileMeta, opts)) {
         return Promise.resolve();
     }
 
@@ -178,7 +183,7 @@ function processUrl(result, decl, node, opts) {
  * @param {Object} opts plugin options
  * @return {Promise}
  */
-function processDecl(result, decl, opts) {
+async function processDecl(result, decl, opts) {
     var promises = [];
 
     decl.value = (0, _postcssValueParser2.default)(decl.value).walk(function (node) {
@@ -186,8 +191,8 @@ function processDecl(result, decl, opts) {
             return;
         }
 
-        var promise = Promise.resolve().then(function () {
-            return processUrl(result, decl, node.nodes[0], opts);
+        var promise = Promise.resolve().then(async function () {
+            return await processUrl(result, decl, node.nodes[0], opts);
         }).catch(function (err) {
             decl.warn(result, err.message);
         });
