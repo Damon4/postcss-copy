@@ -93,4 +93,4 @@ function copy(input, output) {
         });
     });
 }
-module.exports = exports['default'];
+module.exports = exports.default;

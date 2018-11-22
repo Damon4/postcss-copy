@@ -260,4 +260,4 @@ function init() {
 }
 
 exports.default = _postcss2.default.plugin('postcss-copy', init);
-module.exports = exports['default'];
+module.exports = exports.default;
