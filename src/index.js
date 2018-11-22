@@ -17,9 +17,14 @@ const tags = ['path', 'name', 'hash', 'ext', 'query', 'qparams', 'qhash'];
  * @param  {Object} opts plugin options
  * @return {boolean}
  */
-function ignore(fileMeta, opts) {
+async function ignore(fileMeta, opts) {
     if (typeof opts.ignore === 'function') {
-        return opts.ignore(fileMeta, opts);
+        let fn = opts.ignore;
+        if(fn.constructor.name === 'AsyncFunction' || fn instanceof Promise) {
+            return await fn(fileMeta, opts);
+        } else {
+            return opts.ignore(fileMeta, opts);
+        }
     }
 
     if (typeof opts.ignore === 'string' || Array.isArray(opts.ignore)) {
@@ -84,7 +89,7 @@ function getFileMeta(dirname, sourceInputFile, value, opts) {
  * @param {Object} opts plugin options
  * @return {Promise}
  */
-function processUrl(result, decl, node, opts) {
+async function processUrl(result, decl, node, opts) {
     // ignore from the css file by `!`
     if (node.value.indexOf('!') === 0) {
         node.value = node.value.slice(1);
@@ -114,7 +119,7 @@ function processUrl(result, decl, node, opts) {
     );
 
     // ignore from the fileMeta config
-    if (ignore(fileMeta, opts)) {
+    if (await ignore(fileMeta, opts)) {
         return Promise.resolve();
     }
 
@@ -180,7 +185,7 @@ function processUrl(result, decl, node, opts) {
  * @param {Object} opts plugin options
  * @return {Promise}
  */
-function processDecl(result, decl, opts) {
+async function processDecl(result, decl, opts) {
     const promises = [];
 
     decl.value = valueParser(decl.value).walk(node => {
@@ -193,7 +198,7 @@ function processDecl(result, decl, opts) {
         }
 
         const promise = Promise.resolve()
-            .then(() => processUrl(result, decl, node.nodes[0], opts))
+            .then(() => await processUrl(result, decl, node.nodes[0], opts))
             .catch(err => {
                 decl.warn(result, err.message);
             });
