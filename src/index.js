@@ -198,7 +198,7 @@ async function processDecl(result, decl, opts) {
         }
 
         const promise = Promise.resolve()
-            .then(() => await processUrl(result, decl, node.nodes[0], opts))
+            .then(async () => await processUrl(result, decl, node.nodes[0], opts))
             .catch(err => {
                 decl.warn(result, err.message);
             });
