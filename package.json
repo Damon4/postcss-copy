@@ -7,8 +7,8 @@
     "micromatch": "^3.0.3",
     "mkdirp": "^0.5.1",
     "pify": "^4.0.1",
-    "postcss": "^7.0.6",
-    "postcss-value-parser": "^3.3.0"
+    "postcss": "^7.0.0",
+    "postcss-value-parser": "^4.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
